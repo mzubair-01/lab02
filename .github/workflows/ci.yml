@@ -1,35 +1,38 @@
-name: CI
+name: GitOps Deployment Simulation
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
     branches: [ "main" ]
 
 permissions:
   contents: read
 
 jobs:
-  validate:
+  deploy-simulation:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Show repository information
+      - name: Build deployment package
         run: |
-          echo "Repository: $GITHUB_REPOSITORY"
-          echo "Commit: $GITHUB_SHA"
-          git status
+          mkdir -p deploy-package
+          cp README.md deploy-package/
+          cp -r src deploy-package/
+          echo "Commit: $GITHUB_SHA" > deploy-package/deployment-info.txt
+          echo "Environment: lab" >> deploy-package/deployment-info.txt
 
-      - name: Validate required files
+      - name: Show desired state
         run: |
-          test -f README.md
-          test -d src
-          test -d tests
-          echo "Required files/directories exist."
+          find deploy-package -type f -maxdepth 3 -print
+          cat deploy-package/deployment-info.txt
 
-      - name: Run basic validation
-        run: |
-          echo "CI validation completed successfully." 
+      - name: Create deployment archive
+        run: tar -czf gitops-lab02.tar.gz deploy-package
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitops-lab02-package
+          path: gitops-lab02.tar.gz
