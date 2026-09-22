@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Show repository information
+        run: |
+          echo "Repository: $GITHUB_REPOSITORY"
+          echo "Commit: $GITHUB_SHA"
+          git status
+
+      - name: Validate required files
+        run: |
+          test -f README.md
+          test -d src
+          test -d tests
+          echo "Required files/directories exist."
+
+      - name: Run basic validation
+        run: |
+          echo "CI validation completed successfully." 
